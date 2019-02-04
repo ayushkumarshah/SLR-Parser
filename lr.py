@@ -12,6 +12,7 @@ C = {}
 I={}
 J={}
 relation =[]
+r1=[]
 start = ""
 terminals = []
 nonterminals = []
@@ -394,14 +395,13 @@ print_info()
 # print(C)
 # print(J)
 
-dot = Digraph(comment='LR(0) Generation')
-
+dot = Digraph()
 for i in range(len(C)):
     for a in symbols:
         rel=parse_table[i][symbols.index(a)]
 
         if rel:
-            print rel
+            # print rel
             if (len(rel)==1):
                 r=int(rel)
             else:
@@ -413,25 +413,32 @@ for i in range(len(C)):
 
             print("node %d relates to %s for %s"%(i,r,a))
             relation.append(chr(i+97)+chr(r+97))
+            r1.append(a)
 
 print relation
+print r1
 
 M= [ v for v in I.values() ]
 N= [ v for v in J.values() ]
 # relation=['aa','bc','ba']
 #
-dot.node('a',N[0])
-dot.node('b',N[1])
-dot.node('c',N[2])
-dot.node('d',N[3])
-dot.node('e',N[4])
-dot.node('f',N[5])
-dot.node('g',N[6])
-dot.node('h',N[7])
-dot.node('i',N[8])
-dot.node('j',N[9])
-dot.node('k',N[10])
-dot.node('l',N[11])
-dot.edges(relation)
-dot.render('test-output/round-table.gv.pdf', view=True)
-# print()
+# dot.node('a',N[0])
+# dot.node('b',N[1])
+# dot.node('c',N[2])
+# dot.node('d',N[3])
+# dot.node('e',N[4])
+# dot.node('f',N[5])
+# dot.node('g',N[6])
+# dot.node('h',N[7])
+# dot.node('i',N[8])
+# dot.node('j',N[9])
+# dot.node('k',N[10])
+# dot.node('l',N[11])
+# dot.edges(relation)
+
+for i in range(len(C)):
+    dot.node(chr(97+i),N[i],xlabel=M[i])
+
+for i in range(len(relation)):
+    dot.edge(relation[i][0],relation[i][1],label=r1[i])
+dot.render('test.gv.svg', view=True)
