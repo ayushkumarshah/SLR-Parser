@@ -1,20 +1,23 @@
 from Tkinter import *
 from graphviz import Digraph
 tk=Tk()
+import string
+
+import re
 
 grammars = open("grammar2.txt")
 
 G = {}
 C = {}
-I = {}
-J = {}
+I={}
+J={}
+relation =[]
 start = ""
 terminals = []
 nonterminals = []
 symbols = []
 
 canvas=Canvas(tk, width=tk.winfo_screenwidth(),height=tk.winfo_screenheight())
-
 
 def view_lr0():
     show = Toplevel()
@@ -185,6 +188,7 @@ def items():
 
 
 def ACTION(i, a):
+    # print i
     for heads in C['I' + str(i)]:
         for prods in C['I' + str(i)][heads]:
             for j in range(len(prods) - 1):
@@ -196,6 +200,9 @@ def ACTION(i, a):
                                     print "ERROR: Shift-Reduce Conflict at State " + str(i) + ", Symbol " + str(terminals.index(a))
                                     exit(1)
                                 parse_table[i][terminals.index(a)] = "s" + str(k)
+                                # print("terminals")
+                                # print a
+                                # print(terminals.index(a))
                             else:
                                 parse_table[i][len(terminals) + nonterminals.index(a)] = str(k)
                             return "s" + str(k)
@@ -280,13 +287,13 @@ def print_info():
     #     print "}"
     print "\nITEMS:"
     for i in range(len(C)):
-        print (len(C))
         print 'I' + str(i) + ':'
         I[i]='I' + str(i)
         Z= ""
         for keys in C['I' + str(i)]:
             Y = ""
             for prods in C['I' + str(i)][keys]:
+                # print(G)
                 zzz="{:>{width}} ->".format(keys, width=len(max(G.keys(), key=len)))
                 pd=""
 
@@ -384,17 +391,47 @@ items()
 parse_table = [["" for c in range(len(terminals) + len(nonterminals) + 1)] for r in range(len(C))]
 print_info()
 # process_input()
-print(C)
-print(J)
+# print(C)
+# print(J)
 
 dot = Digraph(comment='LR(0) Generation')
 
+for i in range(len(C)):
+    for a in symbols:
+        rel=parse_table[i][symbols.index(a)]
+
+        if rel:
+            print rel
+            if (len(rel)==1):
+                r=int(rel)
+            else:
+                if (rel=='acc')or(rel[0]=='r'):
+                    continue
+                else:
+                    # print rel
+                    r=int(rel[1:3])
+
+            print("node %d relates to %s for %s"%(i,r,a))
+            relation.append(chr(i+97)+chr(r+97))
+
+print relation
+
 M= [ v for v in I.values() ]
 N= [ v for v in J.values() ]
-relation=['aa','bc','ba']
-
+# relation=['aa','bc','ba']
+#
 dot.node('a',N[0])
 dot.node('b',N[1])
 dot.node('c',N[2])
+dot.node('d',N[3])
+dot.node('e',N[4])
+dot.node('f',N[5])
+dot.node('g',N[6])
+dot.node('h',N[7])
+dot.node('i',N[8])
+dot.node('j',N[9])
+dot.node('k',N[10])
+dot.node('l',N[11])
 dot.edges(relation)
 dot.render('test-output/round-table.gv.pdf', view=True)
+# print()
