@@ -1,4 +1,4 @@
-grammars = open("grammar.txt")
+grammars = open("grammar2.txt")
 G = {}
 C = {}
 start = ""
@@ -327,9 +327,14 @@ def process_input():
             print "ERROR: Unrecognized symbol", curr_symbol, "|"
             break
     print "+--------+----------------------------+----------------------------+----------------------------+"
-    
-parse_grammar()
-items()
-parse_table = [["" for c in range(len(terminals) + len(nonterminals) + 1)] for r in range(len(C))]
-print_info()
-process_input()
+
+def main():  
+    parse_grammar()
+    items()
+    global parse_table
+    parse_table = [["" for c in range(len(terminals) + len(nonterminals) + 1)] for r in range(len(C))]
+    print_info()
+    process_input()
+if __name__ == '__main__':
+       main()
+
