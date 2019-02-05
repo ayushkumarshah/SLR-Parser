@@ -7,12 +7,28 @@ import os
 from Tkinter import Canvas,Label,Frame,Button,Tk,Entry,Toplevel
 from graphviz import Digraph
 
+global master
+master = Tk()
 
-grammars = open("grammar2.txt")
+master.title('SLR Parser')
+
+canvas = Canvas(master, width=master.winfo_screenwidth(), height=master.winfo_screenheight())
+
+u1_entry = Entry(canvas)
+canvas.create_window(220, 200, window=u1_entry, height=150, width=300)
+
+u2_entry = Entry(canvas)
+canvas.create_window(220, 430, window=u2_entry, height=100, width=300)
+
+grammars = open("grammar.txt")
 G = {}
 C = {}
 I={}
 J={}
+
+inputstring=""
+
+
 start = ""
 terminals = []
 nonterminals = []
@@ -45,7 +61,7 @@ def parse_grammar():
                 elif char.isupper() and char not in nonterminals:
                     nonterminals.append(char)
                     G[char] = []    #non terminals dont produce other symbols
-    symbols =  nonterminals+terminals
+    symbols =  terminals+nonterminals
 first_seen = []
 
 def FIRST(X):
@@ -356,10 +372,15 @@ def construct_dfa():
         dot.edge(relation[i][0],relation[i][1],label=r1[i])
 
 
-    
 
-def process_input():
-    get_input = raw_input("\nEnter Input: ")
+
+def process_input(inputX):
+    ste=[]
+    sta=[]
+    inp=[]
+    act=[]
+    inputX = 'id = id * id'
+    get_input = inputX
     to_parse = " ".join((get_input + " $").split()).split(" ")
     pointer = 0
     stack = ['0']
@@ -378,17 +399,25 @@ def process_input():
         print "|{:^8}|".format(step),
         for i in stack:
             stack_content += i
-        print "{:27}|".format(stack_content),
+        stck="{:27}|".format(stack_content)
+        sta.append(stck)
+        print stck,
         i = pointer
         while i < len(to_parse):
             input_content += to_parse[i]
             i += 1
-        print "{:>26} | ".format(input_content),
-
+        inpt="{:>26} | ".format(input_content)
+        inp.append(inpt)
+        print inpt,
+        # print step
         step += 1
+
         get_action = ACTION(top_stack, curr_symbol)
+        act.append(get_action)
         if "/" in get_action:
-            print "{:^26}|".format(get_action+". So conflict")
+            conf = "{:^26}|".format(get_action+". So conflict")
+            act.append(conf)
+            print conf
             break
         if "s" in get_action:
             print "{:^26}|".format(get_action)
@@ -407,55 +436,21 @@ def process_input():
                         stack.append(head)
                         stack.append(parse_table[int(state)][len(terminals) + nonterminals.index(head)])
                     i += 1
+
         elif get_action == "acc":
             print "{:^26}|".format("ACCEPTED")
             break
         else:
             print "ERROR: Unrecognized symbol", curr_symbol, "|"
             break
+
     print "+--------+----------------------------+----------------------------+----------------------------+"
-
-
-
-
-def restart_program():
-    """Restarts the current program.
-    Note: this function does not return. Any cleanup action (like
-    saving data) must be done before calling this function."""
-    python = sys.executable
-    os.execl(python, python, * sys.argv)
-
-
-'''
-# def view_lr():
-    # LR_zero(self.master)
-    show = Toplevel(master)
-    show.title("LR(0)")
-    dot = Digraph(comment='LR(0) Generation')
-    i = ["A", "B", "C"]
-    I0 = ["S' -> .S", "S -> .L = R", "S -> .R", "R -> .L", "L -> .*R", "L -> id"]
-    I1 = ["R -> .L", "L -> * . R", "L -> .* R", "L -> .id"]
-    I2 = ["L -> id."]
-    I = ["I0", "I1", "I2"]
-    dot.node("a", I[0])
-    dot.node("b", I[1])
-    dot.node("c", I[2])
-    #dot.edges(["a", "b"])
-    #dot.edges(["a", "c"])
-    print(dot.source)
-    dot.render('test-output/round-table.gv.pdf', view=True)  # doctest: +SKIP
-    display = Label(show, text="Generation of LR(0) Grammar")
-
-    #display.pack()
-
-'''
+    return step,ste,sta,inp,act
 
 def view_lr():
-    
+
     dot.render('test.gv.svg', view=True)
 
-
-def view_parsing():
     
 def view_parsing():
     show = Toplevel(master)
@@ -557,16 +552,16 @@ def view_parsing():
 
 
 def view_stack():
+    inputstring=u2_entry.get()
+    row,ste, sta,inp,act = process_input(inputstring)
+    print inputstring
+
     show = Toplevel(master)
     show.title("Stack Implementation")
     show.geometry("%dx%d%+d%+d" % (1300, 1300, 0, 0))
     canvas = Canvas(show, width=2000, height=1000)
     canvas.grid(row=0, column=0)
-
-    states = 10
-    terminal = 3
-    nonterminal = 3
-    row = 10
+    row = row -1
     col = 4
     m = 10
     n = 100
@@ -578,7 +573,7 @@ def view_stack():
             m = m + 120
         m = 10
         n = n + 30
-
+    print ste,sta,inp,act
     canvas.create_text(65, 110, text="S.N.", font="Times 15 bold")
     canvas.create_text(185, 110, text="Stack", font="Times 15 bold")
     canvas.create_text(305, 110, text="Input", font="Times 15 bold")
@@ -587,25 +582,19 @@ def view_stack():
     show.geometry("%dx%d%+d%+d" % (1300, 800, 0, 0))
 
     # display.pack()
+def getG():
+    inputstring=u1_entry.get()
+    print inputstring
 
-def main():  
+def main():
     parse_grammar()
     items()
     global parse_table
     parse_table = [["" for c in range(len(terminals) + len(nonterminals) + 1)] for r in range(len(C))]
-    print_info()
+    #print_info()
     construct_dfa()
     # process_input()
 
-    global master
-    master=Tk()
-
-
-
-    master.title('SLR Parser')
-
-
-    canvas=Canvas(master, width=master.winfo_screenwidth(),height=master.winfo_screenheight())
 
 
     var = IntVar()
@@ -617,11 +606,6 @@ def main():
     table1 = canvas.create_polygon(50, 350, 600, 350, 600, 500, 50, 500, fill='PaleVioletRed1')
     canvas.create_text(150,360, text="Enter input string",font="Times 15 bold")
 
-    u1_entry = Entry(canvas)
-    canvas.create_window(220, 200, window=u1_entry, height=150, width=300)
-
-    u2_entry = Entry(canvas)
-    canvas.create_window(220,430, window=u2_entry, height=100, width=300)
 
 
     lr0=Button(canvas, text="View LR(0) Items", font="Times 15 bold", command=view_lr)
@@ -633,12 +617,11 @@ def main():
     vs=Button(canvas, text='View Stack', font="Times 15 bold",command=view_stack)
     canvas.create_window(950, 270, window=vs, height=50, width=170)
 
-
     quit=Button(canvas, text='QUIT', font="Times 15 bold",command=master.quit)
     canvas.create_window(950, 350, window=quit, height=50, width=170)
     canvas.pack()
 
-
+    # process_input()
     mainloop()
 
 if __name__ == '__main__':
