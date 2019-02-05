@@ -1,3 +1,4 @@
+import tempfile
 from Tkinter import *
 from Tkinter import Tk
 import Tkinter as tk
@@ -11,11 +12,19 @@ from graphviz import Digraph
 grammars = open("grammar.txt")
 G = {}
 C = {}
+I={}
+J={}
+relation =[]
+r1=[]
+M=[]
+N=[]
 start = ""
 terminals = []
 nonterminals = []
 symbols = []
 error=0
+dot = Digraph()
+
 
 def parse_grammar():
     global G, start, terminals, nonterminals, symbols
@@ -99,7 +108,7 @@ def closure(I):
                 if dot_pos + 1 < len(prods):
                     prod_after_dot = prods[dot_pos + 1]
                     if prod_after_dot in nonterminals:
-                        for prod in G[prod_after_dot]:                   
+                        for prod in G[prod_after_dot]:
                             item = ["."] + prod
                             if prod_after_dot not in J.keys():
                                 J[prod_after_dot] = [item]
@@ -164,7 +173,7 @@ def ACTION(i, a):
     for heads in C['I' + str(i)]:
         if heads != start:
             for prods in C['I' + str(i)][heads]:
-                if prods[-1] == '.':             #final item 
+                if prods[-1] == '.':             #final item
                     k = 0
                     for head in G.keys():
                         for Gprods in G[head]:
@@ -187,7 +196,7 @@ def ACTION(i, a):
                                         error=1
                                         if "r"+str(k) not in parse_table[i][index]:
                                                 parse_table[i][index] = parse_table[i][index]+ "/r" + str(k)
-                                        return parse_table[i][index]                                
+                                        return parse_table[i][index]
                                     else:
                                         parse_table[i][index] = "r" + str(k)
                                 return "r" + str(k)
@@ -251,13 +260,28 @@ def print_info():
     print "\nITEMS:"
     for i in range(len(C)):
         print 'I' + str(i) + ':'
+        I[i]='I' + str(i)
+        Z= ""
         for keys in C['I' + str(i)]:
+            Y = ""
             for prods in C['I' + str(i)][keys]:
-                print "{:>{width}} ->".format(keys, width=len(max(G.keys(), key=len))),
+                # print(G)
+                zzz="{:>{width}} ->".format(keys, width=len(max(G.keys(), key=len)))
+                pd=""
+
+                Z=Z+zzz
+                print zzz,
                 for prod in prods:
-                    print prod,
+                    pd=pd+prod
+                    print (prod),
+                Z=Z+pd+"\n"
                 print
+            Y = Y + Z
         print
+        J[i]=Y
+        print Y
+    M = [v for v in I.values()]
+    N = [v for v in J.values()]
 
     for i in range(len(parse_table)):       #len gives number of states
         for j in symbols:
@@ -350,29 +374,8 @@ def restart_program():
 import Tkinter
 
 
-def view_lr():
-    '''
-    # LR_zero(self.master)
-    show = Toplevel(master)
-    show.title("LR(0)")
-    dot = Digraph(comment='LR(0) Generation')
-    i = ["A", "B", "C"]
-    I0 = ["S' -> .S", "S -> .L = R", "S -> .R", "R -> .L", "L -> .*R", "L -> id"]
-    I1 = ["R -> .L", "L -> * . R", "L -> .* R", "L -> .id"]
-    I2 = ["L -> id."]
-    I = ["I0", "I1", "I2"]
-    dot.node("a", I[0])
-    dot.node("b", I[1])
-    dot.node("c", I[2])
-    #dot.edges(["a", "b"])
-    #dot.edges(["a", "c"])
-    print(dot.source)
-    dot.render('test-output/round-table.gv.pdf', view=True)  # doctest: +SKIP
-    display = Label(show, text="Generation of LR(0) Grammar")
 
-    #display.pack()
 
-'''
 def view_parsing():
     show = Toplevel(master)
     show.title("Parsing Table")
@@ -381,7 +384,7 @@ def view_parsing():
     canvas = Canvas(show, width=2000, height=1000)
     canvas.grid(row=0, column=0)
 
-    
+
     print parse_table
     # a=[["","s4","s5","","1","2","3"],
     #    ["","","","accept","","",""],
@@ -396,7 +399,7 @@ def view_parsing():
     #    ]
 
     print terminals
-    print nonterminalsr
+    print nonterminals
     states = len(C)
     terminal = len(terminals)
     nonterminal = len(nonterminals)
@@ -458,13 +461,25 @@ def view_stack():
 
     # display.pack()
 
-def main():  
+
+def view_lr():
+    dot.view(tempfile.mktemp('.gv'))
+    'test.gv.pdf'
+
+def main():
     parse_grammar()
     items()
     global parse_table
     parse_table = [["" for c in range(len(terminals) + len(nonterminals) + 1)] for r in range(len(C))]
     print_info()
     # process_input()
+
+    for i in range(len(C)):
+        dot.node(chr(97 + i))
+
+    for i in range(len(relation)):
+        dot.edge(relation[i][0], relation[i][1], label=r1[i])
+    dot.render('test.gv.pdf', view=False)
 
     global master
     master=Tk()
