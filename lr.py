@@ -1,10 +1,6 @@
 from Tkinter import *
 from graphviz import Digraph
 tk=Tk()
-import string
-
-import re
-
 grammars = open("grammar2.txt")
 
 G = {}
@@ -55,7 +51,7 @@ def parse_grammar():
                     nonterminals.append(char)
                     G[char] = []
 
-    symbols = terminals + nonterminals
+    symbols = nonterminals+terminals
 
 
 first_seen = []
@@ -236,8 +232,6 @@ def ACTION(i, a):
 
 
 def print_info():
-    Z=[]
-    pd=[]
     # print "GRAMMAR:"
     # for head in G.keys():
     #     if head == start:
