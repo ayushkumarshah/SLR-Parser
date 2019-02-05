@@ -456,6 +456,8 @@ def view_lr():
 
 
 def view_parsing():
+    
+def view_parsing():
     show = Toplevel(master)
     show.title("Parsing Table")
     show.geometry("%dx%d%+d%+d" % (1300, 1300, 0, 0))
@@ -463,7 +465,6 @@ def view_parsing():
     canvas = Canvas(show, width=2000, height=1000)
     canvas.grid(row=0, column=0)
 
-    
     print parse_table
     # a=[["","s4","s5","","1","2","3"],
     #    ["","","","accept","","",""],
@@ -484,24 +485,71 @@ def view_parsing():
     nonterminal = len(nonterminals)
     row = states + 1
     col = terminal + nonterminal + 2
-    m = 10
-    n = 100
-
-    for i in range(0, row + 1):
-        for j in range(0, col):
-            print(m, n)
-            canvas.create_rectangle(m, n, m + 120, n + 30)
-            m = m + 120
-        m = 10
-        n = n + 30
+    print("col"+str(col))
+    m = 130
+    n = 130
 
     canvas.create_rectangle(10, 70, (terminal + 2) * 120, 100)
-    canvas.create_rectangle(((terminal + 2) * 120), 70, col * 120, 100)
+    canvas.create_rectangle(((terminal + 2) * 120), 70, (col-1) * 120, 100)
+    canvas.create_rectangle(10, 100, 130, 130)
+
+
 
     canvas.create_text((terminal + 2) * 60, 83, text="ACTION", font="Times 15 bold")
     canvas.create_text(col * 90, 83, text="GOTO", font="Times 15 bold")
 
     canvas.create_text(65, 110, text="States", font="Times 15 bold")
+
+    a=130
+    b=100
+
+    for i in range(0,terminal):
+        canvas.create_rectangle(a, b, a+120, b+30)
+        a=a+120
+
+        canvas.create_text(120*i+190, 110, text=terminals[i], font="Times 15 bold")
+    a=a+120
+    i=i+1
+    canvas.create_text(120*i+190, 110, text="$", font="Times 15 bold")
+
+
+    j=i+1
+
+    for i in range(1, nonterminal):
+
+        canvas.create_text(120*j+190, 110, text=nonterminals[i], font="Times 15 bold")
+        j=j+1
+        canvas.create_rectangle(a, b, a + 120, b + 30)
+        a = a + 120
+
+    c=10
+    d=130
+
+
+
+    for i in range(0, len(C)):
+
+        canvas.create_text(c+65, d+15, text=i, font="Times 15 bold")
+
+        canvas.create_rectangle(c, d, c + 120, d + 30)
+        d=d+30
+
+
+
+
+    for i in range(0, len(parse_table) ):
+        for j in range(0, len(parse_table[0])-1):
+            print(m, n)
+            print(i,j)
+            canvas.create_text(m+50, n+15, text=parse_table[i][j], font="Times 15 bold")
+
+            canvas.create_rectangle(m, n, m + 120, n + 30)
+
+
+            m = m + 120
+        m = 130
+        n = n + 30
+
 
     show.geometry("%dx%d%+d%+d" % (1300, 800, 0, 0))
 
