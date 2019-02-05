@@ -4,7 +4,7 @@ import Tkinter as tk
 import random
 import time
 import os
-from Tkinter import Canvas,Label,Frame,Button,Tk,Entry,Toplevel
+from Tkinter import Canvas, Label, Frame, Button, Tk, Entry, Toplevel
 from graphviz import Digraph
 
 global master
@@ -23,19 +23,19 @@ canvas.create_window(220, 430, window=u2_entry, height=100, width=300)
 grammars = open("grammar.txt")
 G = {}
 C = {}
-I={}
-J={}
+I = {}
+J = {}
 
-inputstring=""
-
+inputstring = ""
 
 start = ""
 terminals = []
 nonterminals = []
 symbols = []
-error=0
-relation =[]
-r1=[]
+error = 0
+relation = []
+r1 = []
+
 
 def parse_grammar():
     global G, start, terminals, nonterminals, symbols
@@ -60,9 +60,12 @@ def parse_grammar():
                     terminals.append(char)
                 elif char.isupper() and char not in nonterminals:
                     nonterminals.append(char)
-                    G[char] = []    #non terminals dont produce other symbols
-    symbols =  terminals+nonterminals
+                    G[char] = []  # non terminals dont produce other symbols
+    symbols = terminals + nonterminals
+
+
 first_seen = []
+
 
 def FIRST(X):
     global first_seen
@@ -85,6 +88,8 @@ def FIRST(X):
 
 
 follow_seen = []
+
+
 def FOLLOW(A):
     global follow_seen
     follow = []
@@ -109,17 +114,18 @@ def FOLLOW(A):
     follow_seen.remove(A)
     return follow
 
+
 def closure(I):
     J = I
     while True:
         item_len = len(J) + sum(len(v) for v in J.itervalues())
         for heads in J.keys():
             for prods in J[heads]:
-                dot_pos = prods.index('.')      #checks if final item or not
+                dot_pos = prods.index('.')  # checks if final item or not
                 if dot_pos + 1 < len(prods):
                     prod_after_dot = prods[dot_pos + 1]
                     if prod_after_dot in nonterminals:
-                        for prod in G[prod_after_dot]:                   
+                        for prod in G[prod_after_dot]:
                             item = ["."] + prod
                             if prod_after_dot not in J.keys():
                                 J[prod_after_dot] = [item]
@@ -127,6 +133,7 @@ def closure(I):
                                 J[prod_after_dot].append(item)
         if item_len == len(J) + sum(len(v) for v in J.itervalues()):
             return J
+
 
 def GOTO(I, X):
     goto = {}
@@ -144,6 +151,7 @@ def GOTO(I, X):
                             for prod in prod_closure[keys]:
                                 goto[keys].append(prod)
     return goto
+
 
 def items():
     global C
@@ -170,11 +178,13 @@ def ACTION(i, a):
                         if GOTO(C['I' + str(i)], a) == C['I' + str(k)]:
                             if a in terminals:
                                 if "r" in parse_table[i][terminals.index(a)]:
-                                    if error!=1:
-                                        print "ERROR: Shift-Reduce Conflict at State " + str(i) + ", Symbol \'" + str(terminals.index(a))+"\'"
-                                    error=1
-                                    if "s"+str(k) not in parse_table[i][terminals.index(a)]:
-                                        parse_table[i][terminals.index(a)] = parse_table[i][terminals.index(a)]+ "/s" + str(k)
+                                    if error != 1:
+                                        print "ERROR: Shift-Reduce Conflict at State " + str(i) + ", Symbol \'" + str(
+                                            terminals.index(a)) + "\'"
+                                    error = 1
+                                    if "s" + str(k) not in parse_table[i][terminals.index(a)]:
+                                        parse_table[i][terminals.index(a)] = parse_table[i][
+                                                                                 terminals.index(a)] + "/s" + str(k)
                                     return parse_table[i][terminals.index(a)]
                                 else:
                                     parse_table[i][terminals.index(a)] = "s" + str(k)
@@ -184,30 +194,32 @@ def ACTION(i, a):
     for heads in C['I' + str(i)]:
         if heads != start:
             for prods in C['I' + str(i)][heads]:
-                if prods[-1] == '.':             #final item 
+                if prods[-1] == '.':  # final item
                     k = 0
                     for head in G.keys():
                         for Gprods in G[head]:
-                            if head == heads and (Gprods == prods[:-1] ) and (a in terminals or a == '$'):
+                            if head == heads and (Gprods == prods[:-1]) and (a in terminals or a == '$'):
                                 for terms in FOLLOW(heads):
                                     if terms == '$':
                                         index = len(terminals)
                                     else:
                                         index = terminals.index(terms)
                                     if "s" in parse_table[i][index]:
-                                        if error!=1:
-                                            print "ERROR: Shift-Reduce Conflict at State " + str(i) + ", Symbol \'" + str(terms)+"\'"
-                                        error=1
-                                        if "r"+str(k) not in parse_table[i][index]:
-                                            parse_table[i][index] = parse_table[i][index]+ "/r" + str(k)
+                                        if error != 1:
+                                            print "ERROR: Shift-Reduce Conflict at State " + str(
+                                                i) + ", Symbol \'" + str(terms) + "\'"
+                                        error = 1
+                                        if "r" + str(k) not in parse_table[i][index]:
+                                            parse_table[i][index] = parse_table[i][index] + "/r" + str(k)
                                         return parse_table[i][index]
                                     elif parse_table[i][index] and parse_table[i][index] != "r" + str(k):
-                                        if error!=1:
-                                            print "ERROR: Reduce-Reduce Conflict at State " + str(i) + ", Symbol \'" + str(terms)+"\'"
-                                        error=1
-                                        if "r"+str(k) not in parse_table[i][index]:
-                                                parse_table[i][index] = parse_table[i][index]+ "/r" + str(k)
-                                        return parse_table[i][index]                                
+                                        if error != 1:
+                                            print "ERROR: Reduce-Reduce Conflict at State " + str(
+                                                i) + ", Symbol \'" + str(terms) + "\'"
+                                        error = 1
+                                        if "r" + str(k) not in parse_table[i][index]:
+                                            parse_table[i][index] = parse_table[i][index] + "/r" + str(k)
+                                        return parse_table[i][index]
                                     else:
                                         parse_table[i][index] = "r" + str(k)
                                 return "r" + str(k)
@@ -217,8 +229,8 @@ def ACTION(i, a):
         return "acc"
     return ""
 
+
 def print_info():
-   
     print "GRAMMAR:"
     for head in G.keys():
         if head == start:
@@ -280,7 +292,7 @@ def print_info():
                 print
         print
 
-    for i in range(len(parse_table)):       #len gives number of states
+    for i in range(len(parse_table)):  # len gives number of states
         for j in symbols:
             ACTION(i, j)
 
@@ -302,31 +314,32 @@ def print_info():
         print
     print "+" + "--------+" * (len(terminals) + len(nonterminals) + 1)
 
+
 def construct_dfa():
-    Z=[]
-    pd=[]
+    Z = []
+    pd = []
     print "\nITEMS:"
     for i in range(len(C)):
         print 'I' + str(i) + ':'
-        I[i]='I' + str(i)
-        Z= ""
+        I[i] = 'I' + str(i)
+        Z = ""
         for keys in C['I' + str(i)]:
             Y = ""
             for prods in C['I' + str(i)][keys]:
                 # print(G)
-                zzz="{:>{width}} ->".format(keys, width=len(max(G.keys(), key=len)))
-                pd=""
+                zzz = "{:>{width}} ->".format(keys, width=len(max(G.keys(), key=len)))
+                pd = ""
 
-                Z=Z+zzz
+                Z = Z + zzz
                 print zzz,
                 for prod in prods:
-                    pd=pd+prod
+                    pd = pd + prod
                     print (prod),
-                Z=Z+pd+"\n"
+                Z = Z + pd + "\n"
                 print
             Y = Y + Z
         print
-        J[i]=Y
+        J[i] = Y
         print Y
     for i in range(len(parse_table)):
         for j in symbols:
@@ -336,49 +349,46 @@ def construct_dfa():
     dot = Digraph()
     for i in range(len(C)):
         for a in symbols:
-            rel=parse_table[i][symbols.index(a)]
+            rel = parse_table[i][symbols.index(a)]
 
             if rel:
                 # print rel
-                if (len(rel)==1):
-                    r=int(rel)
+                if (len(rel) == 1):
+                    r = int(rel)
                 else:
-                    if (rel=='acc')or(rel[0]=='r'):
+                    if (rel == 'acc') or (rel[0] == 'r'):
                         continue
                     elif '/' in rel:
-                        spos=rel.index('s')
-                        rel=rel[spos:spos+2]
+                        spos = rel.index('s')
+                        rel = rel[spos:spos + 2]
                         print rel
-                        r=int(rel[1:3])
+                        r = int(rel[1:3])
                     else:
                         # print rel
-                        r=int(rel[1:3])
+                        r = int(rel[1:3])
 
-                print("node %d relates to %s for %s"%(i,r,a))
-                relation.append(chr(i+97)+chr(r+97))
+                print("node %d relates to %s for %s" % (i, r, a))
+                relation.append(chr(i + 97) + chr(r + 97))
                 r1.append(a)
 
     print relation
     print r1
 
-    M= [ v for v in I.values() ]
-    N= [ v for v in J.values() ]
-
+    M = [v for v in I.values()]
+    N = [v for v in J.values()]
 
     for i in range(len(C)):
-        dot.node(chr(97+i),N[i],xlabel=M[i])
+        dot.node(chr(97 + i), N[i], xlabel=M[i])
 
     for i in range(len(relation)):
-        dot.edge(relation[i][0],relation[i][1],label=r1[i])
-
-
+        dot.edge(relation[i][0], relation[i][1], label=r1[i])
 
 
 def process_input(inputX):
-    ste=[]
-    sta=[]
-    inp=[]
-    act=[]
+    ste = []
+    sta = []
+    inp = []
+    act = []
     inputX = 'id = id * id'
     get_input = inputX
     to_parse = " ".join((get_input + " $").split()).split(" ")
@@ -399,15 +409,19 @@ def process_input(inputX):
         print "|{:^8}|".format(step),
         for i in stack:
             stack_content += i
-        stck="{:27}|".format(stack_content)
-        sta.append(stck)
+        stck = "{:27}|".format(stack_content)
+        stckx = "{:27}".format(stack_content)
+
+        sta.append(stckx)
         print stck,
         i = pointer
         while i < len(to_parse):
             input_content += to_parse[i]
             i += 1
-        inpt="{:>26} | ".format(input_content)
-        inp.append(inpt)
+        inpt = "{:>26} | ".format(input_content)
+        inptx = "{:>26}".format(input_content)
+
+        inp.append(inptx)
         print inpt,
         # print step
         step += 1
@@ -415,8 +429,10 @@ def process_input(inputX):
         get_action = ACTION(top_stack, curr_symbol)
         act.append(get_action)
         if "/" in get_action:
-            conf = "{:^26}|".format(get_action+". So conflict")
-            act.append(conf)
+            conf = "{:^26}|".format(get_action + ". So conflict")
+            confx = "{:^26}".format(get_action + ". So conflict")
+
+            act[-1]=confx
             print conf
             break
         if "s" in get_action:
@@ -445,13 +461,12 @@ def process_input(inputX):
             break
 
     print "+--------+----------------------------+----------------------------+----------------------------+"
-    return step,ste,sta,inp,act
+    return step, ste, sta, inp, act
 
 def view_lr():
-
     dot.render('test.gv.svg', view=True)
 
-    
+
 def view_parsing():
     show = Toplevel(master)
     show.title("Parsing Table")
@@ -461,17 +476,7 @@ def view_parsing():
     canvas.grid(row=0, column=0)
 
     print parse_table
-    # a=[["","s4","s5","","1","2","3"],
-    #    ["","","","accept","","",""],
-    #    ["s6/r5","","","r5","","",""],
-    #    ["","","","r2","","",""],
-    #    ["","s4","s5","","","8","7"],
-    #    ["r4", "", "", "r4", "", "", ""],
-    #    ["", "s4", "s5", "", "", "8", "9"],
-    #    ["r3", "", "", "r3", "", "", ""],
-    #    ["r5", "", "", "r5"
-    #                   "", "", "", ""],
-    #    ]
+
 
     print terminals
     print nonterminals
@@ -480,71 +485,59 @@ def view_parsing():
     nonterminal = len(nonterminals)
     row = states + 1
     col = terminal + nonterminal + 2
-    print("col"+str(col))
+    print("col" + str(col))
     m = 130
     n = 130
 
     canvas.create_rectangle(10, 70, (terminal + 2) * 120, 100)
-    canvas.create_rectangle(((terminal + 2) * 120), 70, (col-1) * 120, 100)
+    canvas.create_rectangle(((terminal + 2) * 120), 70, (col - 1) * 120, 100)
     canvas.create_rectangle(10, 100, 130, 130)
-
-
 
     canvas.create_text((terminal + 2) * 60, 83, text="ACTION", font="Times 15 bold")
     canvas.create_text(col * 90, 83, text="GOTO", font="Times 15 bold")
 
     canvas.create_text(65, 110, text="States", font="Times 15 bold")
 
-    a=130
-    b=100
+    a = 130
+    b = 100
 
-    for i in range(0,terminal):
-        canvas.create_rectangle(a, b, a+120, b+30)
-        a=a+120
-
-        canvas.create_text(120*i+190, 110, text=terminals[i], font="Times 15 bold")
-    a=a+120
-    i=i+1
-    canvas.create_text(120*i+190, 110, text="$", font="Times 15 bold")
-
-
-    j=i+1
-
-    for i in range(1, nonterminal):
-
-        canvas.create_text(120*j+190, 110, text=nonterminals[i], font="Times 15 bold")
-        j=j+1
+    for i in range(0, terminal):
         canvas.create_rectangle(a, b, a + 120, b + 30)
         a = a + 120
 
-    c=10
-    d=130
+        canvas.create_text(120 * i + 190, 110, text=terminals[i], font="Times 15 bold")
+    a = a + 120
+    i = i + 1
+    canvas.create_text(120 * i + 190, 110, text="$", font="Times 15 bold")
 
+    j = i + 1
 
+    for i in range(1, nonterminal):
+        canvas.create_text(120 * j + 190, 110, text=nonterminals[i], font="Times 15 bold")
+        j = j + 1
+        canvas.create_rectangle(a, b, a + 120, b + 30)
+        a = a + 120
+
+    c = 10
+    d = 130
 
     for i in range(0, len(C)):
-
-        canvas.create_text(c+65, d+15, text=i, font="Times 15 bold")
+        canvas.create_text(c + 65, d + 15, text=i, font="Times 15 bold")
 
         canvas.create_rectangle(c, d, c + 120, d + 30)
-        d=d+30
+        d = d + 30
 
-
-
-
-    for i in range(0, len(parse_table) ):
-        for j in range(0, len(parse_table[0])-1):
+    for i in range(0, len(parse_table)):
+        for j in range(0, len(parse_table[0]) - 1):
             print(m, n)
-            print(i,j)
-            canvas.create_text(m+50, n+15, text=parse_table[i][j], font="Times 15 bold")
+            print(i, j)
+            canvas.create_text(m + 50, n + 15, text=parse_table[i][j], font="Times 15 bold")
 
             canvas.create_rectangle(m, n, m + 120, n + 30)
-
 
             m = m + 120
         m = 130
         n = n + 30
-
 
     show.geometry("%dx%d%+d%+d" % (1300, 800, 0, 0))
 
@@ -567,11 +560,11 @@ def view_stack():
     n= 100
     b=125
 
-    for i in range(0,row):
+    for i in range(len(sta)):
         canvas.create_text( a+60,b+15, text=i+1, font="Times 15 bold")
-        canvas.create_text(a + 60+160, b + 15, text=sta[i], font="Times 15 bold")
-        canvas.create_text(a + 60+200, b + 15,  text=inp[i], font="Times 15 bold")
-        canvas.create_text(a + 60+330, b + 15,  text=act[i], font="Times 15 bold")
+        canvas.create_text(a + 60+260, b + 15, text=sta[i], font="Times 15 bold")
+        canvas.create_text(a + 60+400, b + 15,  text=inp[i], font="Times 15 bold")
+        canvas.create_text(a + 60+660, b + 15,  text=act[i], font="Times 15 bold")
 
         b=b+30
 
@@ -583,29 +576,32 @@ def view_stack():
             print(m, n)
 
 
-            canvas.create_rectangle(m, n, m + 120, n + 30)
-            m = m + 120
+            canvas.create_rectangle(m, n, m + 200, n + 30)
+            m = m + 200
         m = 10
         n = n + 30
     print ste, sta, inp, act
     canvas.create_text(65, 110, text="S.N.", font="Times 15 bold")
-    canvas.create_text(185, 110, text="Stack", font="Times 15 bold")
-    canvas.create_text(305, 110, text="Input", font="Times 15 bold")
-    canvas.create_text(415, 110, text="Action", font="Times 15 bold")
+    canvas.create_text(285, 110, text="Stack", font="Times 15 bold")
+    canvas.create_text(475, 110, text="Input", font="Times 15 bold")
+    canvas.create_text(665, 110, text="Action", font="Times 15 bold")
 
     show.geometry("%dx%d%+d%+d" % (1300, 800, 0, 0))
 
     # display.pack()
+
+
 def getG():
-    inputstring=u1_entry.get()
+    inputstring = u1_entry.get()
     print inputstring
+
 
 def main():
     parse_grammar()
     items()
     global parse_table
     parse_table = [["" for c in range(len(terminals) + len(nonterminals) + 1)] for r in range(len(C))]
-    #print_info()
+    # print_info()
     construct_dfa()
     # process_input()
 
@@ -613,31 +609,28 @@ def main():
 
     var = IntVar()
 
-
     table = canvas.create_polygon(50, 100, 600, 100, 600, 310, 50, 310, fill='PaleVioletRed1')
-    canvas.create_text(150,110, text="Enter the grammar",font="Times 15 bold")
+    canvas.create_text(150, 110, text="Enter the grammar", font="Times 15 bold")
 
     table1 = canvas.create_polygon(50, 350, 600, 350, 600, 500, 50, 500, fill='PaleVioletRed1')
-    canvas.create_text(150,360, text="Enter input string",font="Times 15 bold")
+    canvas.create_text(150, 360, text="Enter input string", font="Times 15 bold")
 
-
-
-    lr0=Button(canvas, text="View LR(0) Items", font="Times 15 bold", command=view_lr)
+    lr0 = Button(canvas, text="View LR(0) Items", font="Times 15 bold", command=view_lr)
     canvas.create_window(750, 270, window=lr0, height=50, width=170)
 
-    pt=Button(canvas, text="View Parsing Table", font="Times 15 bold", command=view_parsing)
+    pt = Button(canvas, text="View Parsing Table", font="Times 15 bold", command=view_parsing)
     canvas.create_window(750, 350, window=pt, height=50, width=170)
 
-    vs=Button(canvas, text='View Stack', font="Times 15 bold",command=view_stack)
+    vs = Button(canvas, text='View Stack', font="Times 15 bold", command=view_stack)
     canvas.create_window(950, 270, window=vs, height=50, width=170)
 
-    quit=Button(canvas, text='QUIT', font="Times 15 bold",command=master.quit)
+    quit = Button(canvas, text='QUIT', font="Times 15 bold", command=master.quit)
     canvas.create_window(950, 350, window=quit, height=50, width=170)
     canvas.pack()
 
     # process_input()
     mainloop()
 
-if __name__ == '__main__':
-       main()
 
+if __name__ == '__main__':
+    main()
