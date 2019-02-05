@@ -552,8 +552,8 @@ def view_parsing():
 
 
 def view_stack():
-    inputstring=u2_entry.get()
-    row,ste, sta,inp,act = process_input(inputstring)
+    inputstring = u2_entry.get()
+    row, ste, sta, inp, act = process_input(inputstring)
     print inputstring
 
     show = Toplevel(master)
@@ -561,19 +561,33 @@ def view_stack():
     show.geometry("%dx%d%+d%+d" % (1300, 1300, 0, 0))
     canvas = Canvas(show, width=2000, height=1000)
     canvas.grid(row=0, column=0)
-    row = row -1
+    row = row - 1
     col = 4
-    m = 10
-    n = 100
+    m,a = 10,10
+    n= 100
+    b=125
+
+    for i in range(0,row):
+        canvas.create_text( a+60,b+15, text=i+1, font="Times 15 bold")
+        canvas.create_text(a + 60+160, b + 15, text=sta[i], font="Times 15 bold")
+        canvas.create_text(a + 60+200, b + 15,  text=inp[i], font="Times 15 bold")
+        canvas.create_text(a + 60+330, b + 15,  text=act[i], font="Times 15 bold")
+
+        b=b+30
+
+
+
 
     for i in range(0, row + 1):
         for j in range(0, col):
             print(m, n)
+
+
             canvas.create_rectangle(m, n, m + 120, n + 30)
             m = m + 120
         m = 10
         n = n + 30
-    print ste,sta,inp,act
+    print ste, sta, inp, act
     canvas.create_text(65, 110, text="S.N.", font="Times 15 bold")
     canvas.create_text(185, 110, text="Stack", font="Times 15 bold")
     canvas.create_text(305, 110, text="Input", font="Times 15 bold")
